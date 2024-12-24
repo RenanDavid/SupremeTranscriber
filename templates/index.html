@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>SupremeTranscriber</title>
+</head>
+<body>
+    <h1>SupremeTranscriber</h1>
+
+    <div>
+        <label for="microfoneSelect">Selecione o microfone:</label>
+        <select id="microfoneSelect"></select>
+    </div>
+
+    <button onclick="iniciarTranscricao()">Iniciar Transcrição</button>
+    <button onclick="pararTranscricao()">Parar Transcrição</button>
+
+    <script>
+        async function carregarMicrofones() {
+            try {
+                const response = await fetch('/listar_microfones');
+                const devices = await response.json();
+                const select = document.getElementById('microfoneSelect');
+                select.innerHTML = '';
+
+                // Adiciona opção para usar dispositivo padrão
+                const optDefault = document.createElement('option');
+                optDefault.value = "";
+                optDefault.textContent = "Usar dispositivo padrão";
+                select.appendChild(optDefault);
+
+                devices.forEach(dev => {
+                    const option = document.createElement('option');
+                    option.value = dev.index;
+                    option.textContent = dev.name + ' (index ' + dev.index + ')';
+                    select.appendChild(option);
+                });
+            } catch (err) {
+                console.error("Erro ao listar microfones:", err);
+            }
+        }
+
+        async function iniciarTranscricao() {
+            const micIndex = document.getElementById('microfoneSelect').value;
+            const response = await fetch('/iniciar_transcricao', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mic_index: micIndex })
+            });
+            const data = await response.json();
+            console.log(data);
+        }
+
+        async function pararTranscricao() {
+            const response = await fetch('/parar_transcricao', { method: 'POST' });
+            const data = await response.json();
+            console.log(data);
+        }
+
+        window.onload = function() {
+            carregarMicrofones();
+        };
+    </script>
+</body>
+</html>
